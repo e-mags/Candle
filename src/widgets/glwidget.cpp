@@ -8,9 +8,9 @@
 #include <QPainter>
 #include <QEasingCurve>
 
-#ifdef GLES
-#include <GLES/gl.h>
-#endif
+// #ifdef GLES
+// #include <GLES/gl.h>
+// #endif
 
 #define ZOOMSTEP 1.1
 
@@ -376,7 +376,8 @@ void GLWidget::initializeGL()
 
 void GLWidget::resizeGL(int width, int height)
 {
-    glViewport(0, 0, width, height);
+    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+    f->glViewport(0, 0, width, height);
     updateProjection();
     emit resized();
 }
@@ -414,10 +415,12 @@ void GLWidget::updateView()
 
 #ifdef GLES
 void GLWidget::paintGL() {
+    
 #else
 void GLWidget::paintEvent(QPaintEvent *pe) {
     Q_UNUSED(pe)
 #endif
+    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();    
     QPainter painter(this);
 
     // Segment counter
@@ -426,25 +429,25 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
     painter.beginNativePainting();
 
     // Clear viewport
-    glClearColor(m_colorBackground.redF(), m_colorBackground.greenF(), m_colorBackground.blueF(), 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    f->glClearColor(m_colorBackground.redF(), m_colorBackground.greenF(), m_colorBackground.blueF(), 1.0);
+    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Shader drawable points
-    glEnable(GL_PROGRAM_POINT_SIZE);
+    f->glEnable(GL_PROGRAM_POINT_SIZE);
 
     // Update settings
     if (m_antialiasing) {
-        if (m_msaa) glEnable(GL_MULTISAMPLE); else {
-            glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-            glEnable(GL_LINE_SMOOTH);
-            glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-            glEnable(GL_POINT_SMOOTH);
+        if (m_msaa) f->glEnable(GL_MULTISAMPLE); else {
+            f->glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+            f->glEnable(GL_LINE_SMOOTH);
+            f->glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+            f->glEnable(GL_POINT_SMOOTH);
 
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glEnable(GL_BLEND);
+            f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            f->glEnable(GL_BLEND);
         }
     }
-    if (m_zBuffer) glEnable(GL_DEPTH_TEST);
+    if (m_zBuffer) f->glEnable(GL_DEPTH_TEST);
 
     if (m_shaderProgram) {
         // Draw 3d
@@ -468,10 +471,10 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
     }
 
     // Draw 2D
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_MULTISAMPLE);
-    glDisable(GL_LINE_SMOOTH);
-    glDisable(GL_BLEND);
+    f->glDisable(GL_DEPTH_TEST);
+    f->glDisable(GL_MULTISAMPLE);
+    f->glDisable(GL_LINE_SMOOTH);
+    f->glDisable(GL_BLEND);
 
     painter.endNativePainting();
 
@@ -493,15 +496,15 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
     painter.drawText(QPoint(x, fm.height() * 3 + 10), m_pinState);
 
     QString str = QString(tr("Vertices: %1")).arg(vertices);
-    painter.drawText(QPoint(this->width() - fm.width(str) - 10, y + 30), str);
+    painter.drawText(QPoint(this->width() - fm.horizontalAdvance(str) - 10, y + 30), str);
     str = QString("FPS: %1").arg(m_fps);
-    painter.drawText(QPoint(this->width() - fm.width(str) - 10, y + 45), str);
+    painter.drawText(QPoint(this->width() - fm.horizontalAdvance(str) - 10, y + 45), str);
 
     str = m_spendTime.toString("hh:mm:ss") + " / " + m_estimatedTime.toString("hh:mm:ss");
-    painter.drawText(QPoint(this->width() - fm.width(str) - 10, y), str);
+    painter.drawText(QPoint(this->width() - fm.horizontalAdvance(str) - 10, y), str);
 
     str = m_bufferState;
-    painter.drawText(QPoint(this->width() - fm.width(str) - 10, y + 15), str);
+    painter.drawText(QPoint(this->width() - fm.horizontalAdvance(str) - 10, y + 15), str);
 
     m_frames++;
 
@@ -545,16 +548,16 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 
 void GLWidget::wheelEvent(QWheelEvent *we)
 {
-    if (m_zoom > 0.1 && we->delta() < 0) {
-        m_xPan -= ((double)we->pos().x() / width() - 0.5 + m_xPan) * (1 - 1 / ZOOMSTEP);
-        m_yPan += ((double)we->pos().y() / height() - 0.5 - m_yPan) * (1 - 1 / ZOOMSTEP);
+    if (m_zoom > 0.1 && we->angleDelta().y() < 0) {
+        m_xPan -= ((double)we->position().x() / width() - 0.5 + m_xPan) * (1 - 1 / ZOOMSTEP);
+        m_yPan += ((double)we->position().y() / height() - 0.5 - m_yPan) * (1 - 1 / ZOOMSTEP);
 
         m_zoom /= ZOOMSTEP;
     }
-    else if (m_zoom < 10 && we->delta() > 0)
+    else if (m_zoom < 10 && we->angleDelta().y() > 0)
     {
-        m_xPan -= ((double)we->pos().x() / width() - 0.5 + m_xPan) * (1 - ZOOMSTEP);
-        m_yPan += ((double)we->pos().y() / height() - 0.5 - m_yPan) * (1 - ZOOMSTEP);
+        m_xPan -= ((double)we->position().x() / width() - 0.5 + m_xPan) * (1 - ZOOMSTEP);
+        m_yPan += ((double)we->position().y() / height() - 0.5 - m_yPan) * (1 - ZOOMSTEP);
 
         m_zoom *= ZOOMSTEP;
     }

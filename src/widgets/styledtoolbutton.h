@@ -12,6 +12,7 @@
 
 class StyledToolButton : public QAbstractButton
 {
+    Q_OBJECT
 public:
     explicit StyledToolButton(QWidget *parent = 0);
 

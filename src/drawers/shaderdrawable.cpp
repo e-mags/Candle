@@ -2,9 +2,9 @@
 
 #include "shaderdrawable.h"
 
-#ifdef GLES
-#include <GLES/gl.h>
-#endif
+// #ifdef GLES
+// #include <GLES/gl.h>
+// #endif
 
 ShaderDrawable::ShaderDrawable()
 {

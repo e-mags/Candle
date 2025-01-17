@@ -3,7 +3,7 @@
 
 #include <QApplication>
 #include <QDebug>
-#include <QGLWidget>
+// #include <QGLWidget>
 #include <QLocale>
 #include <QTranslator>
 #include <QFile>
@@ -36,10 +36,10 @@ int main(int argc, char *argv[])
     QFontDatabase::addApplicationFont(":/fonts/Ubuntu-R.ttf");
 #endif
 
-    QGLFormat glf = QGLFormat::defaultFormat();
-    glf.setSampleBuffers(true);
-    glf.setSamples(8);
-    QGLFormat::setDefaultFormat(glf);
+    // QGLFormat glf = QGLFormat::defaultFormat();
+    // glf.setSampleBuffers(true);
+    // glf.setSamples(8);
+    // QGLFormat::setDefaultFormat(glf);
 
 //    QLocale::setDefault(QLocale("es"));
 
