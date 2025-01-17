@@ -47,6 +47,7 @@ Temporary Items
 
 # Build dir
 build-*
+build*
 
 # Binaries
 bin/*
@@ -63,6 +64,7 @@ uic_*
 
 #vscode
 .vscode
+*.qmake2cmake*
 
 #makefiles
 Makefile*
